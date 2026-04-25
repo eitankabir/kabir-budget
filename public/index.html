@@ -5,17 +5,19 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="theme-color" content="#1d4ed8">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="apple-touch-icon" href="/family.jpg">
   <title>תקציב משפחת כביר</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <style>
     :root {
-      --primary:   #1d4ed8;
-      --pri-dark:  #1e40af;
-      --success:   #16a34a; --suc-bg:  #dcfce7;
-      --danger:    #dc2626; --dan-bg:  #fee2e2;
-      --warn:      #b45309; --warn-bg: #fef3c7;
-      --blue:      #2563eb; --blue-bg: #dbeafe;
-      --gray:      #64748b; --gray-bg: #f1f5f9;
-      --teal:      #0d9488; --teal-bg: #ccfbf1;
+      --primary:   #1d4ed8; --pri-dark: #1e40af;
+      --success:   #16a34a; --suc-bg:   #dcfce7;
+      --danger:    #dc2626; --dan-bg:   #fee2e2;
+      --warn:      #b45309; --warn-bg:  #fef3c7;
+      --blue:      #2563eb; --blue-bg:  #dbeafe;
+      --gray:      #64748b; --gray-bg:  #f1f5f9;
+      --teal:      #0d9488; --teal-bg:  #ccfbf1;
       --bg:        #f1f5f9;
       --card:      #ffffff;
       --text:      #0f172a;
@@ -31,36 +33,27 @@
     [hidden] { display: none !important; }
 
     /* ── HEADER ─────────────────────────────── */
-    .header {
-      position: sticky; top: 0; z-index: 200;
-      background: var(--primary); color: #fff;
-      height: 56px; display: flex; align-items: center; justify-content: space-between;
-      padding: 0 12px; box-shadow: var(--shadow-md);
-    }
-    .logo { font-size: .95rem; font-weight: 800; white-space: nowrap; }
+    .header { position: sticky; top: 0; z-index: 200; background: var(--primary); color: #fff; height: 56px; display: flex; align-items: center; justify-content: space-between; padding: 0 12px; box-shadow: var(--shadow-md); }
+    .logo { font-size: .95rem; font-weight: 800; }
     .nav  { display: flex; gap: 4px; }
-    .nav-btn {
-      background: rgba(255,255,255,.18); color: #fff; border: none;
-      padding: 6px 10px; border-radius: 18px;
-      font: 600 .78rem/1 inherit; cursor: pointer; transition: background .2s; white-space: nowrap;
-    }
+    .nav-btn { background: rgba(255,255,255,.18); color: #fff; border: none; padding: 6px 10px; border-radius: 18px; font: 600 .78rem/1 inherit; cursor: pointer; transition: background .2s; white-space: nowrap; }
     .nav-btn:hover, .nav-btn.active { background: rgba(255,255,255,.35); }
 
     /* ── HERO ───────────────────────────────── */
     .hero {
-      min-height: 120px;
+      min-height: 190px;
       background: linear-gradient(135deg,#1e3a5f,#1d4ed8 55%,#7c3aed);
       background-image: url('/family.jpg'), linear-gradient(135deg,#1e3a5f,#1d4ed8 55%,#7c3aed);
-      background-size: cover; background-position: center;
+      background-size: 160%; background-position: center 28%;
       display: flex; align-items: center; justify-content: center;
       position: relative; overflow: hidden;
     }
-    .hero::before { content:''; position:absolute; inset:0; background:rgba(10,20,50,.5); }
+    .hero::before { content:''; position:absolute; inset:0; background:rgba(8,15,40,.45); }
     .hero-inner { position:relative; z-index:1; text-align:center; color:#fff; padding:22px 16px; }
-    .hero-title    { font-size: 1.6rem; font-weight: 900; text-shadow: 0 2px 8px rgba(0,0,0,.4); }
-    .hero-subtitle { font-size: .85rem; opacity: .85; margin-top: 4px; }
+    .hero-title    { font-size: 1.6rem; font-weight: 900; text-shadow: 0 2px 8px rgba(0,0,0,.5); }
+    .hero-subtitle { font-size: .85rem; opacity: .88; margin-top: 4px; }
 
-    /* ── SUMMARY GRID (6 cards, 2×3) ───────── */
+    /* ── SUMMARY GRID ───────────────────────── */
     .summary-section { padding: 13px 13px 0; }
     .summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
     .s-card { background: var(--card); border-radius: var(--radius); padding: 13px 14px 11px; box-shadow: var(--shadow); border: 2px solid transparent; transition: border-color .3s, box-shadow .3s; }
@@ -69,153 +62,129 @@
     .s-label  { font-size: .7rem; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: .4px; margin-bottom: 3px; }
     .s-amount { font-size: 1.35rem; font-weight: 800; direction: ltr; text-align: right; }
     .s-alert-text { font-size: .7rem; color: var(--danger); font-weight: 700; margin-top: 2px; }
-    .col-green  { color: var(--success); }
-    .col-red    { color: var(--danger); }
-    .col-orange { color: var(--warn); }
-    .col-blue   { color: var(--blue); }
-    .col-gray   { color: var(--gray); }
+    .col-green  { color: var(--success); } .col-red    { color: var(--danger); }
+    .col-orange { color: var(--warn); }    .col-blue   { color: var(--blue); }
+
+    /* ── CHARTS ─────────────────────────────── */
+    .charts-section { padding: 13px 13px 0; }
+    .charts-grid { display: grid; grid-template-columns: 1fr; gap: 11px; }
+    .chart-card { background: var(--card); border-radius: var(--radius); padding: 14px 14px 10px; box-shadow: var(--shadow); }
+    .chart-title { font-size: .82rem; font-weight: 700; text-align: center; margin-bottom: 8px; color: var(--text); }
+    .chart-empty { text-align: center; padding: 30px 0; color: var(--muted); font-size: .85rem; }
+    @media (min-width: 600px) { .charts-grid { grid-template-columns: 1fr 1fr; } }
+
+    /* ── INCOME TABLE ───────────────────────── */
+    .section-wrap { padding: 13px 13px 0; }
+    .section-hdr  { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+    .section-title{ font-size: 1rem; font-weight: 700; }
+    .section-badge{ font-size: .75rem; color: var(--muted); background: var(--border); padding: 2px 9px; border-radius: 10px; }
+    .inc-row { background: var(--card); border-radius: 13px; padding: 11px 13px; margin-bottom: 8px; box-shadow: var(--shadow); display: flex; align-items: center; gap: 10px; }
+    .inc-icon  { width: 38px; height: 38px; border-radius: 10px; background: var(--suc-bg); display: flex; align-items: center; justify-content: center; font-size: 1.1rem; flex-shrink: 0; }
+    .inc-info  { flex: 1; min-width: 0; }
+    .inc-name  { font-size: .88rem; font-weight: 700; }
+    .inc-meta  { font-size: .7rem; color: var(--muted); margin-top: 1px; }
+    .inc-right { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; flex-shrink: 0; }
+    .inc-amount{ font-size: .95rem; font-weight: 800; direction: ltr; color: var(--success); }
 
     /* ── FILTER BAR ─────────────────────────── */
     .filter-bar { display: flex; gap: 7px; align-items: center; padding: 13px 13px 0; }
-    .filter-sel {
-      flex: 1; padding: 9px 10px; border: 2px solid var(--border); border-radius: 11px;
-      font: .85rem/1 inherit; background: var(--card); color: var(--text); direction: rtl;
-    }
+    .filter-sel { flex: 1; padding: 9px 10px; border: 2px solid var(--border); border-radius: 11px; font: .83rem/1 inherit; background: var(--card); color: var(--text); direction: rtl; }
     .filter-sel:focus { outline: none; border-color: var(--primary); }
-    .refresh-btn {
-      width: 40px; height: 40px; flex-shrink: 0;
-      border: 2px solid var(--border); border-radius: 11px; background: var(--card);
-      font-size: 1.1rem; cursor: pointer; display: flex; align-items: center; justify-content: center;
-      transition: background .2s;
-    }
+    .refresh-btn { width: 40px; height: 40px; flex-shrink: 0; border: 2px solid var(--border); border-radius: 11px; background: var(--card); font-size: 1.1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; }
     .refresh-btn:hover { background: var(--border); }
     .refresh-btn.spinning { animation: spin .6s linear; }
     @keyframes spin { to { transform: rotate(360deg); } }
 
     /* ── EXPENSE LIST ───────────────────────── */
     .list-section { padding: 12px 13px 100px; }
-    .list-header  { display: flex; align-items: center; justify-content: space-between; margin-bottom: 11px; }
-    .list-title   { font-size: 1rem; font-weight: 700; }
-    .list-count   { font-size: .75rem; color: var(--muted); background: var(--border); padding: 2px 9px; border-radius: 10px; }
+    .list-hdr { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+    .list-title { font-size: 1rem; font-weight: 700; }
+    .list-count { font-size: .75rem; color: var(--muted); background: var(--border); padding: 2px 9px; border-radius: 10px; }
 
-    .exp-card { background: var(--card); border-radius: var(--radius); padding: 12px 13px; margin-bottom: 8px; box-shadow: var(--shadow); display: flex; align-items: flex-start; gap: 10px; }
-    .exp-icon { width: 42px; height: 42px; border-radius: 11px; background: var(--bg); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; flex-shrink: 0; margin-top: 1px; }
-    .exp-info { flex: 1; min-width: 0; }
+    .exp-card { background: var(--card); border-radius: var(--radius); padding: 11px 13px; margin-bottom: 8px; box-shadow: var(--shadow); display: flex; align-items: flex-start; gap: 10px; }
+    .exp-icon  { width: 42px; height: 42px; border-radius: 11px; background: var(--bg); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; flex-shrink: 0; margin-top: 1px; }
+    .exp-info  { flex: 1; min-width: 0; }
     .exp-desc  { font-size: .9rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .exp-meta  { font-size: .7rem; color: var(--muted); margin-top: 2px; }
     .exp-notes { font-size: .7rem; color: var(--muted); font-style: italic; margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .exp-right { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; flex-shrink: 0; }
-    .exp-amount { font-size: .95rem; font-weight: 700; direction: ltr; }
-    .exp-badge  { font-size: .65rem; padding: 2px 7px; border-radius: 9px; font-weight: 600; }
+    .exp-amount{ font-size: .95rem; font-weight: 700; direction: ltr; }
+    .exp-badge { font-size: .65rem; padding: 2px 7px; border-radius: 9px; font-weight: 600; }
     .badge-done    { background: var(--suc-bg);  color: var(--success); }
     .badge-planned { background: var(--warn-bg); color: var(--warn); }
     .badge-check   { background: var(--blue-bg); color: var(--blue); }
     .badge-cancel  { background: var(--gray-bg); color: var(--gray); text-decoration: line-through; }
     .exp-actions { display: flex; gap: 4px; margin-top: 2px; }
-    .act-btn {
-      width: 28px; height: 28px; border-radius: 8px; border: none;
-      background: var(--bg); font-size: .85rem; cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
-      transition: background .15s;
-    }
+    .act-btn { width: 28px; height: 28px; border-radius: 8px; border: none; background: var(--bg); font-size: .85rem; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background .15s; }
     .act-btn:hover { background: var(--border); }
 
-    .empty-state { text-align: center; padding: 44px 16px; color: var(--muted); }
-    .empty-icon  { font-size: 2.6rem; margin-bottom: 10px; }
+    .empty-state { text-align: center; padding: 40px 16px; color: var(--muted); }
+    .empty-icon  { font-size: 2.5rem; margin-bottom: 10px; }
 
     /* ── SKELETON ───────────────────────────── */
     @keyframes shimmer { 0%,100%{opacity:1} 50%{opacity:.35} }
     .sk { background: var(--border); border-radius: 8px; animation: shimmer 1.4s ease-in-out infinite; }
 
     /* ── FAB ────────────────────────────────── */
-    .fab {
-      position: fixed; bottom: 20px; left: 16px;
-      width: 56px; height: 56px; border-radius: 50%;
-      background: var(--primary); color: #fff; border: none;
-      font-size: 1.8rem; display: flex; align-items: center; justify-content: center;
-      cursor: pointer; box-shadow: var(--shadow-lg); transition: transform .2s, background .2s; z-index: 100;
-    }
+    .fab { position: fixed; bottom: 20px; left: 16px; width: 56px; height: 56px; border-radius: 50%; background: var(--primary); color: #fff; border: none; font-size: 1.8rem; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: var(--shadow-lg); transition: transform .2s, background .2s; z-index: 100; }
     .fab:hover  { background: var(--pri-dark); transform: scale(1.07); }
     .fab:active { transform: scale(.93); }
 
-    /* ── FORM WRAP ──────────────────────────── */
+    /* ── FORM ───────────────────────────────── */
     .form-wrap { padding: 20px 14px 110px; max-width: 480px; margin: 0 auto; }
     .form-heading { font-size: 1.3rem; font-weight: 800; text-align: center; margin-bottom: 20px; }
-
     .field { margin-bottom: 15px; }
     .field-label { display: block; font-size: .875rem; font-weight: 600; margin-bottom: 5px; }
-    .field-input {
-      width: 100%; padding: 12px 13px;
-      border: 2px solid var(--border); border-radius: 12px;
-      font: 1rem/1.4 inherit; background: var(--card); color: var(--text);
-      transition: border-color .2s; direction: rtl;
-    }
+    .field-input { width: 100%; padding: 12px 13px; border: 2px solid var(--border); border-radius: 12px; font: 1rem/1.4 inherit; background: var(--card); color: var(--text); transition: border-color .2s; direction: rtl; }
     .field-input:focus { outline: none; border-color: var(--primary); }
     .field-input[type="number"] { direction: ltr; text-align: right; }
 
-    /* category grid */
     .cat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
-    .cat-btn {
-      background: var(--card); border: 2px solid var(--border); border-radius: 11px;
-      padding: 9px 4px; font: .72rem/1.3 inherit; cursor: pointer;
-      display: flex; flex-direction: column; align-items: center; gap: 3px; transition: all .15s;
-    }
+    .cat-btn  { background: var(--card); border: 2px solid var(--border); border-radius: 11px; padding: 9px 4px; font: .72rem/1.3 inherit; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 3px; transition: all .15s; }
     .cat-btn .ci { font-size: 1.15rem; }
-    .cat-btn:hover    { border-color: var(--primary); background: #eff6ff; }
-    .cat-btn.selected { border-color: var(--primary); background: var(--blue-bg); color: var(--primary); font-weight: 700; }
+    .cat-btn:hover, .cat-btn.selected { border-color: var(--primary); background: var(--blue-bg); color: var(--primary); font-weight: 700; }
 
-    /* status grid 2×2 */
     .status-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
-    .status-btn { padding: 12px; border: 2px solid var(--border); border-radius: 12px; font: .95rem/1 inherit; cursor: pointer; background: var(--card); transition: all .15s; }
+    .status-btn { padding: 12px; border: 2px solid var(--border); border-radius: 12px; font: .9rem/1 inherit; cursor: pointer; background: var(--card); transition: all .15s; }
     .s-done.selected   { border-color: var(--success); background: var(--suc-bg);  color: var(--success); font-weight: 700; }
     .s-plan.selected   { border-color: var(--warn);    background: var(--warn-bg); color: var(--warn);    font-weight: 700; }
     .s-check.selected  { border-color: var(--blue);    background: var(--blue-bg); color: var(--blue);    font-weight: 700; }
     .s-cancel.selected { border-color: var(--gray);    background: var(--gray-bg); color: var(--gray);    font-weight: 700; }
 
-    /* submit */
-    .submit-btn {
-      width: 100%; padding: 15px; margin-top: 5px;
-      background: var(--primary); color: #fff; border: none; border-radius: 15px;
-      font: 700 1rem/1 inherit; cursor: pointer; transition: background .2s, transform .1s;
-    }
+    .pay-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+    .pay-btn  { background: var(--card); border: 2px solid var(--border); border-radius: 10px; padding: 10px 5px; font: .78rem/1.3 inherit; cursor: pointer; transition: all .15s; text-align: center; }
+    .pay-btn:hover, .pay-btn.selected { border-color: var(--teal); background: var(--teal-bg); color: var(--teal); font-weight: 700; }
+
+    .submit-btn { width: 100%; padding: 15px; margin-top: 5px; background: var(--primary); color: #fff; border: none; border-radius: 15px; font: 700 1rem/1 inherit; cursor: pointer; transition: background .2s, transform .1s; }
     .submit-btn:hover    { background: var(--pri-dark); }
     .submit-btn:active   { transform: scale(.98); }
     .submit-btn:disabled { opacity: .6; cursor: not-allowed; transform: none; }
     .submit-btn.teal     { background: var(--teal); }
     .submit-btn.teal:hover { background: #0f766e; }
-    .submit-btn.ghost {
-      background: none; color: var(--muted); border: 2px solid var(--border); margin-top: 8px;
-    }
+    .submit-btn.ghost    { background: none; color: var(--muted); border: 2px solid var(--border); margin-top: 8px; }
     .submit-btn.ghost:hover { background: var(--border); }
     .logout-btn { display: block; width: 100%; margin-top: 9px; padding: 10px; background: none; border: none; color: var(--muted); font: .82rem/1 inherit; cursor: pointer; text-align: center; }
 
+    /* ── SUCCESS BANNER ─────────────────────── */
+    .success-banner { text-align: center; padding: 32px 16px; }
+    .success-icon   { font-size: 3.5rem; margin-bottom: 12px; }
+    .success-text   { font-size: 1.2rem; font-weight: 800; margin-bottom: 20px; }
+
     /* ── AUTH CARD ──────────────────────────── */
-    .auth-card { background: var(--card); border-radius: var(--radius); padding: 32px 20px; box-shadow: var(--shadow-md); text-align: center; }
+    .auth-card  { background: var(--card); border-radius: var(--radius); padding: 32px 20px; box-shadow: var(--shadow-md); text-align: center; }
     .auth-icon  { font-size: 2.6rem; margin-bottom: 10px; }
     .auth-title { font-size: 1.2rem; font-weight: 800; margin-bottom: 5px; }
     .auth-sub   { font-size: .85rem; color: var(--muted); margin-bottom: 20px; }
     .auth-err   { color: var(--danger); font-size: .85rem; margin-top: 6px; min-height: 18px; }
 
     /* ── MODALS ─────────────────────────────── */
-    .modal-overlay {
-      position: fixed; inset: 0; z-index: 300;
-      background: rgba(0,0,0,.5);
-      display: flex; align-items: center; justify-content: center;
-      padding: 20px;
-    }
-    .modal-box {
-      background: var(--card); border-radius: var(--radius);
-      padding: 24px 20px; width: 100%; max-width: 340px;
-      box-shadow: var(--shadow-lg);
-    }
+    .modal-overlay { position: fixed; inset: 0; z-index: 300; background: rgba(0,0,0,.5); display: flex; align-items: center; justify-content: center; padding: 20px; }
+    .modal-box { background: var(--card); border-radius: var(--radius); padding: 24px 20px; width: 100%; max-width: 340px; box-shadow: var(--shadow-lg); }
     .modal-title { font-size: 1.1rem; font-weight: 800; margin-bottom: 12px; text-align: center; }
     .modal-text  { font-size: .9rem; color: var(--muted); text-align: center; margin-bottom: 16px; line-height: 1.5; }
     .modal-text strong { color: var(--text); }
     .modal-btns  { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 14px; }
-    .modal-btn {
-      padding: 12px; border: none; border-radius: 12px;
-      font: 600 .95rem/1 inherit; cursor: pointer; transition: opacity .2s;
-    }
+    .modal-btn   { padding: 12px; border: none; border-radius: 12px; font: 600 .95rem/1 inherit; cursor: pointer; transition: opacity .2s; }
     .modal-btn:hover { opacity: .85; }
     .modal-btn.cancel { background: var(--border); color: var(--text); }
     .modal-btn.ok     { background: var(--primary); color: #fff; }
@@ -223,15 +192,7 @@
     .modal-btn:disabled { opacity: .6; cursor: not-allowed; }
 
     /* ── TOAST ──────────────────────────────── */
-    .toast {
-      position: fixed; bottom: 88px; left: 50%;
-      transform: translateX(-50%) translateY(14px);
-      background: var(--text); color: #fff;
-      padding: 10px 18px; border-radius: 20px;
-      font: .85rem/1 inherit; font-weight: 500;
-      pointer-events: none; opacity: 0; transition: all .3s ease;
-      z-index: 500; white-space: nowrap; max-width: 92vw;
-    }
+    .toast { position: fixed; bottom: 88px; left: 50%; transform: translateX(-50%) translateY(14px); background: var(--text); color: #fff; padding: 10px 18px; border-radius: 20px; font: .85rem/1 inherit; font-weight: 500; pointer-events: none; opacity: 0; transition: all .3s ease; z-index: 500; white-space: nowrap; max-width: 92vw; }
     .toast.show          { opacity: 1; transform: translateX(-50%) translateY(0); }
     .toast.toast-success { background: var(--success); }
     .toast.toast-error   { background: var(--danger); }
@@ -239,7 +200,6 @@
     @media (min-width: 600px) {
       .fab { display: none; }
       .summary-grid { grid-template-columns: repeat(3, 1fr); }
-      .cat-grid { grid-template-columns: repeat(4, 1fr); }
     }
   </style>
 </head>
@@ -260,7 +220,7 @@
 
   <div class="hero">
     <div class="hero-inner">
-      <div class="hero-title">משפחת כביר 🏡</div>
+      <div class="hero-title">האחים כביר 🏡</div>
       <div class="hero-subtitle" id="hero-sub">טוען…</div>
     </div>
   </div>
@@ -277,6 +237,35 @@
     </div>
   </div>
 
+  <!-- Charts -->
+  <div class="charts-section">
+    <div class="charts-grid">
+      <div class="chart-card">
+        <div class="chart-title">💰 הכנסות מול הוצאות</div>
+        <div id="chart1-wrap"><canvas id="chart-overview"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">🏷️ הוצאות לפי קטגוריה</div>
+        <div id="chart2-wrap"><canvas id="chart-cats"></canvas></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Income table -->
+  <div class="section-wrap">
+    <div class="section-hdr">
+      <div class="section-title">💰 הכנסות</div>
+      <div class="section-badge" id="income-count">…</div>
+    </div>
+    <div id="income-table">
+      <div class="inc-row">
+        <div class="sk" style="width:38px;height:38px;border-radius:10px;flex-shrink:0"></div>
+        <div style="flex:1"><div class="sk" style="height:14px;margin-bottom:5px;border-radius:5px"></div><div class="sk" style="height:11px;width:55%;border-radius:5px"></div></div>
+        <div style="flex-shrink:0;text-align:left"><div class="sk" style="height:16px;width:60px;border-radius:5px"></div></div>
+      </div>
+    </div>
+  </div>
+
   <!-- Filter bar -->
   <div class="filter-bar">
     <select class="filter-sel" id="filter-cat" onchange="applyFilters()">
@@ -289,24 +278,19 @@
       <option value="בבדיקה">🔍 בבדיקה</option>
       <option value="בוטל">❌ בוטל</option>
     </select>
-    <button class="refresh-btn" id="refresh-btn" onclick="doRefresh()" title="רענן נתונים">🔄</button>
+    <button class="refresh-btn" id="refresh-btn" onclick="doRefresh()" title="רענן">🔄</button>
   </div>
 
   <!-- Expense list -->
   <div class="list-section">
-    <div class="list-header">
-      <div class="list-title">פירוט הוצאות</div>
+    <div class="list-hdr">
+      <div class="list-title">📋 הוצאות</div>
       <div class="list-count" id="list-count">…</div>
     </div>
     <div id="expense-list">
       <div class="exp-card">
         <div class="sk" style="width:42px;height:42px;border-radius:11px;flex-shrink:0"></div>
-        <div style="flex:1"><div class="sk" style="height:15px;margin-bottom:6px;border-radius:5px"></div><div class="sk" style="height:11px;width:60%;border-radius:5px"></div></div>
-        <div style="flex-shrink:0"><div class="sk" style="height:15px;width:50px;border-radius:5px;margin-bottom:5px"></div><div class="sk" style="height:11px;width:40px;border-radius:5px"></div></div>
-      </div>
-      <div class="exp-card">
-        <div class="sk" style="width:42px;height:42px;border-radius:11px;flex-shrink:0"></div>
-        <div style="flex:1"><div class="sk" style="height:15px;margin-bottom:6px;border-radius:5px"></div><div class="sk" style="height:11px;width:75%;border-radius:5px"></div></div>
+        <div style="flex:1"><div class="sk" style="height:15px;margin-bottom:6px;border-radius:5px"></div><div class="sk" style="height:11px;width:65%;border-radius:5px"></div></div>
         <div style="flex-shrink:0"><div class="sk" style="height:15px;width:50px;border-radius:5px;margin-bottom:5px"></div><div class="sk" style="height:11px;width:40px;border-radius:5px"></div></div>
       </div>
     </div>
@@ -318,6 +302,7 @@
 <div id="view-expense" hidden>
   <div class="form-wrap">
 
+    <!-- Auth -->
     <div id="exp-auth-wrap">
       <div class="auth-card">
         <div class="auth-icon">🔒</div>
@@ -333,62 +318,78 @@
       </div>
     </div>
 
+    <!-- Form -->
     <div id="exp-form-wrap" hidden>
-      <div class="form-heading" id="exp-form-title">➕ הוצאה חדשה</div>
-
-      <div class="field">
-        <label class="field-label">🏷️ קטגוריה</label>
-        <div class="cat-grid" id="cat-grid"></div>
-      </div>
-
-      <div class="field">
-        <label class="field-label">📅 תאריך</label>
-        <input type="date" class="field-input" id="f-date">
-      </div>
-
-      <div class="field">
-        <label class="field-label">📝 תיאור</label>
-        <input type="text" class="field-input" id="f-desc" placeholder="לדוגמה: קניות שבועיות" autocomplete="off">
-      </div>
-
-      <div class="field">
-        <label class="field-label">✅ סטטוס</label>
-        <div class="status-grid">
-          <button class="status-btn s-done selected" onclick="setExpStatus('בוצע')">✅ בוצע</button>
-          <button class="status-btn s-plan"          onclick="setExpStatus('מתוכנן')">📅 מתוכנן</button>
-          <button class="status-btn s-check"         onclick="setExpStatus('בבדיקה')">🔍 בבדיקה</button>
-          <button class="status-btn s-cancel"        onclick="setExpStatus('בוטל')">❌ בוטל</button>
+      <!-- Success state (after save) -->
+      <div id="exp-success" hidden>
+        <div class="success-banner">
+          <div class="success-icon">✅</div>
+          <div class="success-text">ההוצאה נשמרה!</div>
+          <button class="submit-btn" onclick="addAnotherExp()">＋ הוסף הוצאה נוספת</button>
+          <button class="submit-btn ghost" onclick="showView('dash')" style="margin-top:10px">חזרה לדשבורד</button>
         </div>
-        <input type="hidden" id="f-status" value="בוצע">
       </div>
 
-      <div class="field">
-        <label class="field-label">💰 סכום משוער (₪)</label>
-        <input type="number" class="field-input" id="f-est" placeholder="0" min="0" step="1" inputmode="numeric">
-      </div>
+      <!-- Actual form -->
+      <div id="exp-fields">
+        <div class="form-heading" id="exp-form-title">➕ הוצאה חדשה</div>
 
-      <div class="field" id="final-field">
-        <label class="field-label">💵 סכום סופי (₪)</label>
-        <input type="number" class="field-input" id="f-final" placeholder="0" min="0" step="1" inputmode="numeric">
-      </div>
+        <div class="field">
+          <label class="field-label">🏷️ קטגוריה</label>
+          <div class="cat-grid" id="cat-grid"></div>
+        </div>
 
-      <div class="field">
-        <label class="field-label">👤 מוציא</label>
-        <input type="text" class="field-input" id="f-spender" placeholder="מי שילם?" list="spenders-list" autocomplete="off">
-        <datalist id="spenders-list">
-          <option>הראל</option><option>איתן</option>
-          <option>עתידה</option><option>שלומי</option>
-        </datalist>
-      </div>
+        <div class="field">
+          <label class="field-label">📅 תאריך</label>
+          <input type="date" class="field-input" id="f-date">
+        </div>
 
-      <div class="field">
-        <label class="field-label">📌 הערות (אופציונלי)</label>
-        <input type="text" class="field-input" id="f-notes" placeholder="הערה נוספת…">
-      </div>
+        <div class="field">
+          <label class="field-label">📝 תיאור</label>
+          <input type="text" class="field-input" id="f-desc" placeholder="לדוגמה: קניות שבועיות" autocomplete="off">
+        </div>
 
-      <button class="submit-btn" id="save-exp-btn" onclick="saveExpense()">שמור הוצאה</button>
-      <button class="submit-btn ghost" id="cancel-edit-btn" onclick="cancelEdit()" hidden>ביטול עריכה</button>
-      <button class="logout-btn" onclick="doLogout()">יציאה 🔓</button>
+        <div class="field">
+          <label class="field-label">✅ סטטוס</label>
+          <div class="status-grid">
+            <button class="status-btn s-done selected" onclick="setExpStatus('בוצע')">✅ בוצע</button>
+            <button class="status-btn s-plan"          onclick="setExpStatus('מתוכנן')">📅 מתוכנן</button>
+            <button class="status-btn s-check"         onclick="setExpStatus('בבדיקה')">🔍 בבדיקה</button>
+            <button class="status-btn s-cancel"        onclick="setExpStatus('בוטל')">❌ בוטל</button>
+          </div>
+          <input type="hidden" id="f-status" value="בוצע">
+        </div>
+
+        <!-- Estimated amount — hidden when status=בוצע -->
+        <div class="field" id="est-field" hidden>
+          <label class="field-label">💰 סכום משוער (₪)</label>
+          <input type="number" class="field-input" id="f-est" placeholder="0" min="0" step="1" inputmode="numeric">
+        </div>
+
+        <!-- Final amount — shown only when status=בוצע -->
+        <div class="field" id="final-field">
+          <label class="field-label">💵 סכום סופי (₪)</label>
+          <input type="number" class="field-input" id="f-final" placeholder="0" min="0" step="1" inputmode="numeric">
+        </div>
+
+        <div class="field">
+          <label class="field-label">👤 מוציא</label>
+          <input type="text" class="field-input" id="f-spender" placeholder="מי שילם?" list="spenders-list" autocomplete="off">
+          <datalist id="spenders-list">
+            <option>הראל</option><option>איתן</option>
+            <option>עתידה</option><option>שלומי</option><option>תקציב הורים</option>
+          </datalist>
+        </div>
+
+        <div class="field">
+          <label class="field-label">📌 הערות (אופציונלי)</label>
+          <input type="text" class="field-input" id="f-notes" placeholder="הערה נוספת…">
+        </div>
+
+        <button class="submit-btn" id="save-exp-btn" onclick="saveExpense()">שמור הוצאה</button>
+        <button class="submit-btn ghost" id="cancel-edit-btn" onclick="cancelEdit()" hidden>ביטול עריכה</button>
+        <button class="logout-btn" onclick="doLogout()">יציאה 🔓</button>
+      </div>
     </div>
 
   </div>
@@ -398,6 +399,7 @@
 <div id="view-income" hidden>
   <div class="form-wrap">
 
+    <!-- Auth -->
     <div id="inc-auth-wrap">
       <div class="auth-card">
         <div class="auth-icon">🔒</div>
@@ -413,8 +415,9 @@
       </div>
     </div>
 
+    <!-- Form -->
     <div id="inc-form-wrap" hidden>
-      <div class="form-heading">💰 הכנסה חדשה</div>
+      <div class="form-heading" id="inc-form-title">💰 הכנסה חדשה</div>
 
       <div class="field">
         <label class="field-label">👤 שם</label>
@@ -422,6 +425,7 @@
         <datalist id="inc-names">
           <option>הראל</option><option>איתן</option>
           <option>עתידה</option><option>שלומי</option>
+          <option>תקציב הורים</option>
         </datalist>
       </div>
 
@@ -436,11 +440,20 @@
       </div>
 
       <div class="field">
-        <label class="field-label">📝 הערה (אופציונלי)</label>
-        <input type="text" class="field-input" id="i-note" placeholder="לדוגמה: העברה בנקאית">
+        <label class="field-label">💳 אמצעי תשלום</label>
+        <div class="pay-grid">
+          <button class="pay-btn" data-pay="העברה בנקאית" onclick="setIncCat(this.dataset.pay)">🏦<br>העברה</button>
+          <button class="pay-btn" data-pay="ביט"          onclick="setIncCat(this.dataset.pay)">📲<br>ביט</button>
+          <button class="pay-btn" data-pay="מזומן"        onclick="setIncCat(this.dataset.pay)">💵<br>מזומן</button>
+          <button class="pay-btn" data-pay="צ'ק"          onclick="setIncCat(this.dataset.pay)">📝<br>צ'ק</button>
+          <button class="pay-btn" data-pay="פייבוקס"      onclick="setIncCat(this.dataset.pay)">📱<br>פייבוקס</button>
+          <button class="pay-btn" data-pay="אחר"          onclick="setIncCat(this.dataset.pay)">📦<br>אחר</button>
+        </div>
+        <input type="hidden" id="i-cat">
       </div>
 
       <button class="submit-btn teal" id="save-inc-btn" onclick="saveIncome()">שמור הכנסה</button>
+      <button class="submit-btn ghost" id="cancel-inc-btn" onclick="cancelEditIncome()" hidden>ביטול עריכה</button>
       <button class="logout-btn" onclick="doLogout()">יציאה 🔓</button>
     </div>
 
@@ -468,48 +481,39 @@
 <div class="modal-overlay" id="delete-modal" hidden>
   <div class="modal-box" onclick="event.stopPropagation()">
     <div class="modal-title">🗑️ מחיקת הוצאה</div>
-    <div class="modal-text">האם למחוק את ההוצאה?<br><strong id="delete-desc"></strong></div>
+    <div class="modal-text">האם למחוק?<br><strong id="delete-desc"></strong></div>
     <div class="modal-btns">
       <button class="modal-btn cancel" onclick="cancelDelete()">ביטול</button>
-      <button class="modal-btn del"    id="confirm-del-btn" onclick="confirmDelete()">מחק</button>
+      <button class="modal-btn del" id="confirm-del-btn" onclick="confirmDelete()">מחק</button>
     </div>
   </div>
 </div>
 
-<!-- FAB -->
 <button class="fab" onclick="showView('expense')" title="הוסף הוצאה">＋</button>
-
-<!-- Toast -->
 <div class="toast" id="toast"></div>
 
 <script>
 // ── CONSTANTS ─────────────────────────────────────────────
 const CATEGORIES = [
-  {label:'מוצרי עזר לבית',  icon:'🏡'}, {label:'הוצאות בנייה',   icon:'🏗️'},
-  {label:'מוצרי היגיינה',   icon:'🪥'}, {label:'מזון וקניות',    icon:'🛒'},
-  {label:'בריאות',           icon:'💊'}, {label:'הוצאות מזומן',   icon:'💵'},
-  {label:'מוצרים למטפל',    icon:'👶'}, {label:'שונות/אחר',      icon:'📦'},
+  {label:'מוצרי עזר לבית', icon:'🏡'}, {label:'הוצאות בנייה',  icon:'🏗️'},
+  {label:'מוצרי היגיינה',  icon:'🪥'}, {label:'מזון וקניות',   icon:'🛒'},
+  {label:'בריאות',          icon:'💊'}, {label:'הוצאות מזומן',  icon:'💵'},
+  {label:'מוצרים למטפל',   icon:'👶'}, {label:'שונות/אחר',     icon:'📦'},
 ];
-const CAT_ICON = Object.fromEntries(CATEGORIES.map(c => [c.label, c.icon]));
-
-const STATUS_BADGE = {
-  'בוצע':    'badge-done',
-  'מתוכנן':  'badge-planned',
-  'בבדיקה':  'badge-check',
-  'בוטל':    'badge-cancel',
-};
+const CAT_ICON   = Object.fromEntries(CATEGORIES.map(c => [c.label, c.icon]));
+const STATUS_BADGE = { 'בוצע':'badge-done', 'מתוכנן':'badge-planned', 'בבדיקה':'badge-check', 'בוטל':'badge-cancel' };
+const CHART_COLORS = ['#3b82f6','#ef4444','#f59e0b','#10b981','#8b5cf6','#ec4899','#06b6d4','#f97316'];
 
 // ── STATE ─────────────────────────────────────────────────
 const state = {
-  expenses:     [],
-  income:       [],
-  authed:       false,
-  password:     '',
-  editExpense:  null,      // {rowIndex, ...} when editing
-  pendingAction: null,     // {type, rowIndex} waiting for auth
-  pendingDelIdx: null,
-  filters:      { cat: '', status: '' },
+  expenses: [], income: [],
+  authed: false, password: '',
+  editExpense: null, editIncome: null,
+  pendingAction: null, pendingDelIdx: null,
+  filters: { cat: '', status: '' },
 };
+
+let chartOverview = null, chartCats = null;
 
 // ── DATE HELPERS ──────────────────────────────────────────
 function parseDate(s) {
@@ -523,97 +527,48 @@ function parseDate(s) {
 function dispDate(s)  { const d=parseDate(s); return d?`${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`:s; }
 function todayIso()   { const d=new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
 function isoToDisp(s) { if (!s) return ''; const [y,m,d]=s.split('-'); return `${d}/${m}/${y}`; }
-function dispToIso(s) {
-  if (!s) return todayIso();
-  const m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
-  return m ? `${m[3]}-${m[2].padStart(2,'0')}-${m[1].padStart(2,'0')}` : s;
-}
+function dispToIso(s) { const m=s?.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/); return m?`${m[3]}-${m[2].padStart(2,'0')}-${m[1].padStart(2,'0')}`:todayIso(); }
 function fmtMoney(n)  { return '₪' + Number(n).toLocaleString('he-IL'); }
 function esc(s)       { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
 // ── API ───────────────────────────────────────────────────
-async function apiData() {
-  const r = await fetch('/api/data');
-  if (!r.ok) throw new Error('שגיאה בטעינה');
-  return r.json();
-}
-async function apiAuth(pw) {
-  const r = await fetch('/api/auth', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({password:pw}) });
-  if (!r.ok) { const e=await r.json(); throw new Error(e.error||'סיסמה שגויה'); }
-}
-async function apiPost(url, body) {
-  const r = await fetch(url, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body) });
-  if (!r.ok) { const e=await r.json(); throw new Error(e.error||'שגיאה'); }
-  return r.json();
-}
-async function apiPut(body) {
-  const r = await fetch('/api/expenses', { method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body) });
-  if (!r.ok) { const e=await r.json(); throw new Error(e.error||'שגיאה בעדכון'); }
-}
-async function apiDelete(body) {
-  const r = await fetch('/api/expenses', { method:'DELETE', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body) });
-  if (!r.ok) { const e=await r.json(); throw new Error(e.error||'שגיאה במחיקה'); }
-}
+async function apiData() { const r=await fetch('/api/data'); if(!r.ok)throw new Error('שגיאה בטעינה'); return r.json(); }
+async function apiAuth(pw) { const r=await fetch('/api/auth',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({password:pw})}); if(!r.ok){const e=await r.json();throw new Error(e.error||'סיסמה שגויה');} }
+async function apiReq(url,method,body) { const r=await fetch(url,{method,headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}); if(!r.ok){const e=await r.json();throw new Error(e.error||'שגיאה');} return r.json(); }
 
 // ── AUTH ──────────────────────────────────────────────────
 async function doAuth(form) {
-  const pwId  = form === 'exp' ? 'exp-pw'  : 'inc-pw';
-  const errId = form === 'exp' ? 'exp-err' : 'inc-err';
-  const pw = document.getElementById(pwId).value.trim();
-  const errEl = document.getElementById(errId);
-  errEl.textContent = '';
-  if (!pw) { errEl.textContent = 'יש להזין סיסמה'; return; }
-  try {
-    await apiAuth(pw);
-    setAuthed(pw);
-    showAuthState();
-  } catch(e) {
-    errEl.textContent = e.message;
-    document.getElementById(pwId).value = '';
-    document.getElementById(pwId).focus();
-  }
+  const pwId=form==='exp'?'exp-pw':'inc-pw', errId=form==='exp'?'exp-err':'inc-err';
+  const pw=document.getElementById(pwId).value.trim();
+  const errEl=document.getElementById(errId);
+  errEl.textContent='';
+  if(!pw){errEl.textContent='יש להזין סיסמה';return;}
+  try { await apiAuth(pw); setAuthed(pw); showAuthState(); }
+  catch(e) { errEl.textContent=e.message; document.getElementById(pwId).value=''; document.getElementById(pwId).focus(); }
 }
-function setAuthed(pw) {
-  state.password = pw; state.authed = true;
-  sessionStorage.setItem('kabir_auth', pw);
-}
-function doLogout() {
-  state.authed = false; state.password = '';
-  sessionStorage.removeItem('kabir_auth');
-  showAuthState();
-}
-function restoreAuth() {
-  const s = sessionStorage.getItem('kabir_auth');
-  if (s) { state.password = s; state.authed = true; }
-}
+function setAuthed(pw) { state.password=pw; state.authed=true; sessionStorage.setItem('kabir_auth',pw); }
+function doLogout()    { state.authed=false; state.password=''; sessionStorage.removeItem('kabir_auth'); showAuthState(); }
+function restoreAuth() { const s=sessionStorage.getItem('kabir_auth'); if(s){state.password=s;state.authed=true;} }
 function showAuthState() {
-  const a = state.authed;
-  document.getElementById('exp-auth-wrap').hidden = a;
-  document.getElementById('exp-form-wrap').hidden = !a;
-  document.getElementById('inc-auth-wrap').hidden = a;
-  document.getElementById('inc-form-wrap').hidden = !a;
+  const a=state.authed;
+  document.getElementById('exp-auth-wrap').hidden=a; document.getElementById('exp-form-wrap').hidden=!a;
+  document.getElementById('inc-auth-wrap').hidden=a; document.getElementById('inc-form-wrap').hidden=!a;
 }
 
 // ── VIEWS ─────────────────────────────────────────────────
 function showView(v) {
   ['dash','expense','income'].forEach(id => {
-    document.getElementById(`view-${id}`).hidden = id !== v;
-    document.getElementById(`btn-${id === 'dash' ? 'dash' : id}`).classList.toggle('active', id === v);
+    document.getElementById(`view-${id}`).hidden = id!==v;
+    document.getElementById(`btn-${id}`).classList.toggle('active', id===v);
   });
-  if (v === 'expense' && !state.authed) {
-    setTimeout(() => document.getElementById('exp-pw').focus(), 80);
-  }
-  if (v === 'income' && !state.authed) {
-    setTimeout(() => document.getElementById('inc-pw').focus(), 80);
-  }
-  if (v === 'expense' && !state.editExpense) {
-    resetExpForm();
-  }
+  if(v==='expense'&&!state.authed) setTimeout(()=>document.getElementById('exp-pw').focus(),80);
+  if(v==='income'&&!state.authed)  setTimeout(()=>document.getElementById('inc-pw').focus(),80);
+  if(v==='expense'&&!state.editExpense) resetExpForm();
 }
 
 // ── SUMMARY ───────────────────────────────────────────────
 function computeSummary() {
-  const totalIncome   = state.income.reduce((s,i) => s + i.amount, 0);
+  const totalIncome   = state.income.reduce((s,i)=>s+i.amount, 0);
   const totalSpent    = state.expenses.filter(e=>e.status==='בוצע').reduce((s,e)=>s+e.finalAmt, 0);
   const totalPlanned  = state.expenses.filter(e=>e.status==='מתוכנן').reduce((s,e)=>s+e.estimatedAmt, 0);
   const totalChecking = state.expenses.filter(e=>e.status==='בבדיקה').reduce((s,e)=>s+e.estimatedAmt, 0);
@@ -622,51 +577,96 @@ function computeSummary() {
   return { totalIncome, totalSpent, totalPlanned, totalChecking, currentBal, expectedBal };
 }
 
-function balColor(n, warn=0) { return n < 0 ? 'col-red' : n < warn ? 'col-orange' : 'col-green'; }
+function balColor(n, warn=0) { return n<0?'col-red':n<warn?'col-orange':'col-green'; }
 
 function renderSummary() {
   const { totalIncome, totalSpent, totalPlanned, totalChecking, currentBal, expectedBal } = computeSummary();
-  const lowBal  = currentBal < 2000;
-  const alertCls = lowBal ? ' alert-low' : '';
-
+  const alertCls = currentBal<2000?' alert-low':'';
   document.getElementById('summary-grid').innerHTML = `
-    <div class="s-card">
-      <div class="s-label">💰 סה"כ נכנס</div>
-      <div class="s-amount col-green">${fmtMoney(totalIncome)}</div>
-    </div>
-    <div class="s-card">
-      <div class="s-label">✅ סה"כ יצא</div>
-      <div class="s-amount col-red">${fmtMoney(totalSpent)}</div>
-    </div>
-    <div class="s-card">
-      <div class="s-label">📅 מתוכנן לצאת</div>
-      <div class="s-amount col-orange">${fmtMoney(totalPlanned)}</div>
-    </div>
-    <div class="s-card">
-      <div class="s-label">🔍 בבדיקה</div>
-      <div class="s-amount col-blue">${fmtMoney(totalChecking)}</div>
-    </div>
-    <div class="s-card${alertCls}">
-      <div class="s-label">💳 יתרה נוכחית</div>
-      <div class="s-amount ${balColor(currentBal, 2000)}">${fmtMoney(currentBal)}</div>
-      ${lowBal ? '<div class="s-alert-text">⚠️ יתרה נמוכה מ-₪2,000!</div>' : ''}
-    </div>
-    <div class="s-card">
-      <div class="s-label">🔮 יתרה צפויה</div>
-      <div class="s-amount ${balColor(expectedBal, 1000)}">${fmtMoney(expectedBal)}</div>
-    </div>`;
+    <div class="s-card"><div class="s-label">💰 סה"כ נכנס</div><div class="s-amount col-green">${fmtMoney(totalIncome)}</div></div>
+    <div class="s-card"><div class="s-label">✅ סה"כ יצא</div><div class="s-amount col-red">${fmtMoney(totalSpent)}</div></div>
+    <div class="s-card"><div class="s-label">📅 מתוכנן</div><div class="s-amount col-orange">${fmtMoney(totalPlanned)}</div></div>
+    <div class="s-card"><div class="s-label">🔍 בבדיקה</div><div class="s-amount col-blue">${fmtMoney(totalChecking)}</div></div>
+    <div class="s-card${alertCls}"><div class="s-label">💳 יתרה נוכחית</div><div class="s-amount ${balColor(currentBal,2000)}">${fmtMoney(currentBal)}</div>${currentBal<2000?'<div class="s-alert-text">⚠️ יתרה נמוכה!</div>':''}</div>
+    <div class="s-card"><div class="s-label">🔮 יתרה צפויה</div><div class="s-amount ${balColor(expectedBal,1000)}">${fmtMoney(expectedBal)}</div></div>`;
+  const brothers = [...new Set(state.income.map(i=>i.name))].length;
+  document.getElementById('hero-sub').textContent = `${brothers} אחים · ${state.expenses.length} הוצאות · יתרה ${fmtMoney(currentBal)}`;
+}
 
-  document.getElementById('hero-sub').textContent =
-    `${state.income.length} תורמים · ${state.expenses.length} הוצאות · יתרה ${fmtMoney(currentBal)}`;
+// ── CHARTS ────────────────────────────────────────────────
+function renderCharts() {
+  const { totalIncome, totalSpent, totalPlanned, totalChecking, currentBal } = computeSummary();
+  const remain = Math.max(0, currentBal - totalPlanned - totalChecking);
+
+  // Chart 1: Income vs Expenses
+  const ctx1 = document.getElementById('chart-overview').getContext('2d');
+  if (chartOverview) chartOverview.destroy();
+  if (totalIncome === 0) {
+    document.getElementById('chart1-wrap').innerHTML = '<div class="chart-empty">אין נתונים עדיין</div>';
+  } else {
+    chartOverview = new Chart(ctx1, {
+      type: 'doughnut',
+      data: {
+        labels: ['יצא', 'מתוכנן', 'בבדיקה', 'נשאר'],
+        datasets: [{ data: [totalSpent, totalPlanned, totalChecking, remain],
+          backgroundColor: ['#dc2626','#b45309','#2563eb','#16a34a'], borderWidth: 2, borderColor: '#fff' }],
+      },
+      options: { cutout:'60%', plugins: { legend: { position:'bottom', labels:{ font:{family:'Segoe UI,Tahoma,Arial'}, padding:10, boxWidth:12 } } } },
+    });
+  }
+
+  // Chart 2: Expenses by category
+  const catTotals = {};
+  state.expenses.filter(e=>e.status!=='בוטל').forEach(e => {
+    const amt = e.status==='בוצע' ? e.finalAmt : e.estimatedAmt;
+    catTotals[e.category] = (catTotals[e.category]||0) + amt;
+  });
+  const catLabels = Object.keys(catTotals);
+  const ctx2 = document.getElementById('chart-cats').getContext('2d');
+  if (chartCats) chartCats.destroy();
+  if (!catLabels.length) {
+    document.getElementById('chart2-wrap').innerHTML = '<div class="chart-empty">אין הוצאות עדיין</div>';
+  } else {
+    const catIcons = catLabels.map(l => (CAT_ICON[l]||'') + ' ' + l);
+    chartCats = new Chart(ctx2, {
+      type: 'doughnut',
+      data: {
+        labels: catIcons,
+        datasets: [{ data: catLabels.map(k=>catTotals[k]),
+          backgroundColor: CHART_COLORS.slice(0,catLabels.length), borderWidth: 2, borderColor: '#fff' }],
+      },
+      options: { cutout:'55%', plugins: { legend: { position:'bottom', labels:{ font:{family:'Segoe UI,Tahoma,Arial'}, padding:8, boxWidth:11, font:{size:11} } } } },
+    });
+  }
+}
+
+// ── INCOME TABLE ──────────────────────────────────────────
+function renderIncomeTable() {
+  document.getElementById('income-count').textContent = state.income.length + ' רשומות';
+  if (!state.income.length) {
+    document.getElementById('income-table').innerHTML='<div class="empty-state"><div class="empty-icon">💸</div><div>אין הכנסות</div></div>';
+    return;
+  }
+  const sorted = [...state.income].sort((a,b)=>(parseDate(b.date)||0)-(parseDate(a.date)||0));
+  document.getElementById('income-table').innerHTML = sorted.map(inc=>`
+    <div class="inc-row">
+      <div class="inc-icon">💰</div>
+      <div class="inc-info">
+        <div class="inc-name">${esc(inc.name)}</div>
+        <div class="inc-meta">${esc(inc.date)}${inc.note?' · '+esc(inc.note):''}</div>
+      </div>
+      <div class="inc-right">
+        <div class="inc-amount">${fmtMoney(inc.amount)}</div>
+        <button class="act-btn" onclick="startEditIncome(${inc.rowIndex})">✏️</button>
+      </div>
+    </div>`).join('');
 }
 
 // ── EXPENSE LIST ──────────────────────────────────────────
 function buildCatFilter() {
-  const cats = [...new Set(CATEGORIES.map(c=>c.label))];
-  const sel  = document.getElementById('filter-cat');
-  const cur  = sel.value;
-  sel.innerHTML = '<option value="">כל הקטגוריות</option>' +
-    cats.map(c => `<option value="${esc(c)}"${cur===c?' selected':''}>${CAT_ICON[c]||''} ${esc(c)}</option>`).join('');
+  const sel=document.getElementById('filter-cat'), cur=sel.value;
+  sel.innerHTML='<option value="">כל הקטגוריות</option>'+
+    CATEGORIES.map(c=>`<option value="${esc(c.label)}"${cur===c.label?' selected':''}>${c.icon} ${esc(c.label)}</option>`).join('');
 }
 
 function applyFilters() {
@@ -676,102 +676,85 @@ function applyFilters() {
 }
 
 function renderList() {
-  let list = [...state.expenses];
-  if (state.filters.cat)    list = list.filter(e => e.category === state.filters.cat);
-  if (state.filters.status) list = list.filter(e => e.status   === state.filters.status);
-  list.sort((a,b) => (parseDate(b.date)||0) - (parseDate(a.date)||0));
-
-  const total = state.expenses.length;
-  const shown = list.length;
-  document.getElementById('list-count').textContent =
-    (state.filters.cat || state.filters.status) ? `${shown}/${total}` : `${total} הוצאות`;
-
-  if (!shown) {
-    document.getElementById('expense-list').innerHTML =
-      `<div class="empty-state"><div class="empty-icon">📭</div><div>${total?'אין תוצאות לסינון':'אין הוצאות עדיין'}</div></div>`;
+  let list=[...state.expenses];
+  if(state.filters.cat)    list=list.filter(e=>e.category===state.filters.cat);
+  if(state.filters.status) list=list.filter(e=>e.status===state.filters.status);
+  list.sort((a,b)=>(parseDate(b.date)||0)-(parseDate(a.date)||0));
+  const total=state.expenses.length, shown=list.length;
+  document.getElementById('list-count').textContent=(state.filters.cat||state.filters.status)?`${shown}/${total}`:total+' הוצאות';
+  if(!shown){
+    document.getElementById('expense-list').innerHTML=`<div class="empty-state"><div class="empty-icon">📭</div><div>${total?'אין תוצאות לסינון':'אין הוצאות עדיין'}</div></div>`;
     return;
   }
-  document.getElementById('expense-list').innerHTML = list.map(renderCard).join('');
+  document.getElementById('expense-list').innerHTML=list.map(renderCard).join('');
 }
 
 function renderCard(e) {
-  const icon    = CAT_ICON[e.category] || '📦';
-  const isDone  = e.status === 'בוצע';
-  const amount  = isDone ? e.finalAmt : e.estimatedAmt;
-  const badge   = STATUS_BADGE[e.status] || 'badge-planned';
-  const meta    = [dispDate(e.date), e.spender].filter(Boolean).join(' · ');
-  const idx     = e.rowIndex;
-  return `
-    <div class="exp-card">
-      <div class="exp-icon">${icon}</div>
-      <div class="exp-info">
-        <div class="exp-desc">${esc(e.description)}</div>
-        <div class="exp-meta">${esc(meta)} · ${esc(e.category)}</div>
-        ${e.notes ? `<div class="exp-notes">📌 ${esc(e.notes)}</div>` : ''}
+  const icon=CAT_ICON[e.category]||'📦', isDone=e.status==='בוצע';
+  const amount=isDone?e.finalAmt:e.estimatedAmt;
+  const badge=STATUS_BADGE[e.status]||'badge-planned';
+  const meta=[dispDate(e.date),e.spender].filter(Boolean).join(' · ')+' · '+e.category;
+  return `<div class="exp-card">
+    <div class="exp-icon">${icon}</div>
+    <div class="exp-info">
+      <div class="exp-desc">${esc(e.description)}</div>
+      <div class="exp-meta">${esc(meta)}</div>
+      ${e.notes?`<div class="exp-notes">📌 ${esc(e.notes)}</div>`:''}
+    </div>
+    <div class="exp-right">
+      <div class="exp-amount">${fmtMoney(amount)}</div>
+      <div class="exp-badge ${badge}">${e.status}</div>
+      <div class="exp-actions">
+        <button class="act-btn" onclick="startEdit(${e.rowIndex})">✏️</button>
+        <button class="act-btn" onclick="startDelete(${e.rowIndex})">🗑️</button>
       </div>
-      <div class="exp-right">
-        <div class="exp-amount">${fmtMoney(amount)}</div>
-        <div class="exp-badge ${badge}">${e.status}</div>
-        <div class="exp-actions">
-          <button class="act-btn" onclick="startEdit(${idx})" title="עריכה">✏️</button>
-          <button class="act-btn" onclick="startDelete(${idx})" title="מחיקה">🗑️</button>
-        </div>
-      </div>
-    </div>`;
+    </div>
+  </div>`;
 }
 
 async function loadAll(silent=false) {
-  if (!silent) showSkeletons();
+  if(!silent){ document.getElementById('summary-grid').innerHTML=Array(6).fill('<div class="s-card"><div class="sk" style="height:50px"></div></div>').join(''); }
   try {
-    const data = await apiData();
-    state.expenses = data.expenses || [];
-    state.income   = data.income   || [];
+    const data=await apiData();
+    state.expenses=data.expenses||[];
+    state.income=data.income||[];
     buildCatFilter();
     renderSummary();
+    renderCharts();
+    renderIncomeTable();
     renderList();
   } catch(e) {
-    toast('שגיאה בטעינת הנתונים', 'error');
-    if (!silent) {
-      document.getElementById('expense-list').innerHTML =
-        `<div class="empty-state"><div class="empty-icon">⚠️</div><div>${e.message}</div></div>`;
-      document.getElementById('summary-grid').innerHTML = '';
-    }
+    toast('שגיאה בטעינת הנתונים','error');
+    document.getElementById('expense-list').innerHTML=`<div class="empty-state"><div class="empty-icon">⚠️</div><div>${e.message}</div></div>`;
   }
 }
 
-function showSkeletons() {
-  document.getElementById('summary-grid').innerHTML = Array(6).fill(
-    '<div class="s-card"><div class="sk" style="height:50px"></div></div>'
-  ).join('');
-}
-
 async function doRefresh() {
-  const btn = document.getElementById('refresh-btn');
+  const btn=document.getElementById('refresh-btn');
   btn.classList.add('spinning');
   await loadAll(true);
   btn.classList.remove('spinning');
-  toast('הנתונים עודכנו ✅', 'success');
+  toast('הנתונים עודכנו ✅','success');
 }
 
 // ── EXPENSE FORM ──────────────────────────────────────────
 function buildCatGrid() {
-  document.getElementById('cat-grid').innerHTML = CATEGORIES.map(c =>
-    `<button class="cat-btn" onclick="setCat('${c.label}')" data-cat="${c.label}">
-       <span class="ci">${c.icon}</span><span>${c.label}</span>
-     </button>`).join('');
+  document.getElementById('cat-grid').innerHTML=CATEGORIES.map(c=>
+    `<button class="cat-btn" onclick="setCat('${c.label}')" data-cat="${c.label}"><span class="ci">${c.icon}</span><span>${c.label}</span></button>`
+  ).join('');
 }
-
-function setCat(cat) {
-  document.querySelectorAll('.cat-btn').forEach(b => b.classList.toggle('selected', b.dataset.cat === cat));
-}
-function getCat() { return document.querySelector('.cat-btn.selected')?.dataset.cat || ''; }
+function setCat(cat) { document.querySelectorAll('.cat-btn').forEach(b=>b.classList.toggle('selected',b.dataset.cat===cat)); }
+function getCat()    { return document.querySelector('.cat-btn.selected')?.dataset.cat||''; }
 
 function setExpStatus(s) {
-  document.getElementById('f-status').value = s;
-  const map = {'בוצע':'.s-done','מתוכנן':'.s-plan','בבדיקה':'.s-check','בוטל':'.s-cancel'};
-  document.querySelectorAll('.status-btn').forEach(b => b.classList.remove('selected'));
+  document.getElementById('f-status').value=s;
+  const map={'בוצע':'.s-done','מתוכנן':'.s-plan','בבדיקה':'.s-check','בוטל':'.s-cancel'};
+  document.querySelectorAll('.status-btn').forEach(b=>b.classList.remove('selected'));
   document.querySelector(map[s])?.classList.add('selected');
-  document.getElementById('final-field').hidden = s !== 'בוצע';
+  // בוצע: show final, hide estimated. Otherwise: show estimated, hide final.
+  const isDone = s==='בוצע';
+  document.getElementById('est-field').hidden   =  isDone;
+  document.getElementById('final-field').hidden = !isDone;
 }
 
 function resetExpForm() {
@@ -781,184 +764,196 @@ function resetExpForm() {
   document.getElementById('f-final').value   = '';
   document.getElementById('f-spender').value = '';
   document.getElementById('f-notes').value   = '';
-  document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('selected'));
+  document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('selected'));
   setExpStatus('בוצע');
-  document.getElementById('exp-form-title').textContent   = '➕ הוצאה חדשה';
-  document.getElementById('save-exp-btn').textContent     = 'שמור הוצאה';
-  document.getElementById('cancel-edit-btn').hidden       = true;
+  document.getElementById('exp-form-title').textContent  = '➕ הוצאה חדשה';
+  document.getElementById('save-exp-btn').textContent    = 'שמור הוצאה';
+  document.getElementById('cancel-edit-btn').hidden      = true;
+  document.getElementById('exp-success').hidden          = true;
+  document.getElementById('exp-fields').hidden           = false;
+}
+
+function addAnotherExp() {
+  state.editExpense = null;
+  resetExpForm();
 }
 
 function startEdit(rowIndex) {
-  if (!state.authed) {
-    state.pendingAction = { type: 'edit', rowIndex };
-    showActionModal();
-    return;
-  }
-  const exp = state.expenses.find(e => e.rowIndex === rowIndex);
-  if (!exp) return;
-  state.editExpense = exp;
-  // Pre-fill form
+  if(!state.authed){ state.pendingAction={type:'edit',rowIndex}; showActionModal(); return; }
+  const exp=state.expenses.find(e=>e.rowIndex===rowIndex);
+  if(!exp) return;
+  state.editExpense=exp;
   document.getElementById('f-date').value    = dispToIso(exp.date);
   document.getElementById('f-desc').value    = exp.description;
-  document.getElementById('f-est').value     = exp.estimatedAmt || '';
-  document.getElementById('f-final').value   = exp.finalAmt || '';
-  document.getElementById('f-spender').value = exp.spender || '';
-  document.getElementById('f-notes').value   = exp.notes || '';
+  document.getElementById('f-est').value     = exp.estimatedAmt||'';
+  document.getElementById('f-final').value   = exp.finalAmt||'';
+  document.getElementById('f-spender').value = exp.spender||'';
+  document.getElementById('f-notes').value   = exp.notes||'';
   setCat(exp.category);
   setExpStatus(exp.status);
   document.getElementById('exp-form-title').textContent = '✏️ עריכת הוצאה';
   document.getElementById('save-exp-btn').textContent   = 'עדכן הוצאה';
   document.getElementById('cancel-edit-btn').hidden     = false;
+  document.getElementById('exp-success').hidden         = true;
+  document.getElementById('exp-fields').hidden          = false;
   showView('expense');
 }
 
-function cancelEdit() {
-  state.editExpense = null;
-  resetExpForm();
-  showView('dash');
-}
+function cancelEdit() { state.editExpense=null; resetExpForm(); showView('dash'); }
 
 async function saveExpense() {
-  const date    = document.getElementById('f-date').value;
-  const desc    = document.getElementById('f-desc').value.trim();
-  const est     = parseFloat(document.getElementById('f-est').value)   || 0;
-  const fin     = parseFloat(document.getElementById('f-final').value) || 0;
-  const spender = document.getElementById('f-spender').value.trim();
-  const cat     = getCat();
-  const status  = document.getElementById('f-status').value;
-  const notes   = document.getElementById('f-notes').value.trim();
+  const date=document.getElementById('f-date').value;
+  const desc=document.getElementById('f-desc').value.trim();
+  const est=parseFloat(document.getElementById('f-est').value)||0;
+  const fin=parseFloat(document.getElementById('f-final').value)||0;
+  const spender=document.getElementById('f-spender').value.trim();
+  const cat=getCat(), status=document.getElementById('f-status').value;
+  const notes=document.getElementById('f-notes').value.trim();
 
-  if (!date)  { toast('יש לבחור תאריך', 'error');    return; }
-  if (!desc)  { toast('יש להזין תיאור', 'error');    return; }
-  if (!cat)   { toast('יש לבחור קטגוריה', 'error'); return; }
-  if (status === 'מתוכנן' && est <= 0) { toast('יש להזין סכום משוער', 'error'); return; }
-  if (status === 'בוצע'   && fin <= 0) { toast('יש להזין סכום סופי',  'error'); return; }
-  if (status === 'בבדיקה' && est <= 0) { toast('יש להזין סכום משוער', 'error'); return; }
+  if(!date)  { toast('יש לבחור תאריך','error');    return; }
+  if(!desc)  { toast('יש להזין תיאור','error');    return; }
+  if(!cat)   { toast('יש לבחור קטגוריה','error'); return; }
+  if(status==='בוצע'   && fin<=0) { toast('יש להזין סכום סופי','error');  return; }
+  if(status==='מתוכנן' && est<=0) { toast('יש להזין סכום משוער','error'); return; }
+  if(status==='בבדיקה' && est<=0) { toast('יש להזין סכום משוער','error'); return; }
 
-  const btn = document.getElementById('save-exp-btn');
-  btn.disabled = true; btn.textContent = 'שומר…';
-  const displayDate = isoToDisp(date);
-  const payload = { password:state.password, date:displayDate, description:desc,
-                    estimatedAmt:est, finalAmt:fin, spender, category:cat, status, notes };
+  const btn=document.getElementById('save-exp-btn');
+  btn.disabled=true; btn.textContent='שומר…';
+  const displayDate=isoToDisp(date);
+  const payload={password:state.password,date:displayDate,description:desc,estimatedAmt:est,finalAmt:fin,spender,category:cat,status,notes};
   try {
-    if (state.editExpense) {
-      await apiPut({ ...payload, rowIndex: state.editExpense.rowIndex });
-      const idx = state.expenses.findIndex(e => e.rowIndex === state.editExpense.rowIndex);
-      if (idx >= 0) state.expenses[idx] = { ...state.editExpense, ...payload, date:displayDate };
-      toast('ההוצאה עודכנה! ✏️', 'success');
-      state.editExpense = null;
+    if(state.editExpense){
+      await apiReq('/api/expenses','PUT',{...payload,rowIndex:state.editExpense.rowIndex});
+      const idx=state.expenses.findIndex(e=>e.rowIndex===state.editExpense.rowIndex);
+      if(idx>=0) state.expenses[idx]={...state.editExpense,...payload,date:displayDate};
+      state.editExpense=null;
+      toast('ההוצאה עודכנה! ✏️','success');
+      resetExpForm();
+      setTimeout(()=>{ showView('dash'); renderSummary(); renderCharts(); renderList(); },800);
     } else {
-      await apiPost('/api/expenses', payload);
-      const maxRow = state.expenses.reduce((m,e) => Math.max(m, e.rowIndex), 1);
-      state.expenses.push({ rowIndex: maxRow+1, date:displayDate, description:desc,
-                            estimatedAmt:est, finalAmt:fin, spender, category:cat, status, notes });
-      toast('ההוצאה נוספה! ✅', 'success');
+      await apiReq('/api/expenses','POST',payload);
+      const maxRow=state.expenses.reduce((m,e)=>Math.max(m,e.rowIndex),1);
+      state.expenses.push({rowIndex:maxRow+1,date:displayDate,description:desc,estimatedAmt:est,finalAmt:fin,spender,category:cat,status,notes});
+      // Show success + "+" button
+      document.getElementById('exp-fields').hidden  = true;
+      document.getElementById('exp-success').hidden = false;
+      renderSummary(); renderCharts(); renderList();
     }
-    resetExpForm();
-    setTimeout(() => { showView('dash'); renderSummary(); renderList(); }, 800);
-  } catch(e) { toast(e.message, 'error'); }
-  finally { btn.disabled=false; btn.textContent = state.editExpense ? 'עדכן הוצאה' : 'שמור הוצאה'; }
+  } catch(e) { toast(e.message,'error'); }
+  finally { btn.disabled=false; btn.textContent=state.editExpense?'עדכן הוצאה':'שמור הוצאה'; }
 }
 
-// ── DELETE ────────────────────────────────────────────────
+// ── DELETE EXPENSE ────────────────────────────────────────
 function startDelete(rowIndex) {
-  if (!state.authed) {
-    state.pendingAction = { type: 'delete', rowIndex };
-    showActionModal();
-    return;
-  }
-  const exp = state.expenses.find(e => e.rowIndex === rowIndex);
-  if (!exp) return;
-  state.pendingDelIdx = rowIndex;
-  document.getElementById('delete-desc').textContent = exp.description;
-  document.getElementById('delete-modal').hidden = false;
+  if(!state.authed){ state.pendingAction={type:'delete',rowIndex}; showActionModal(); return; }
+  const exp=state.expenses.find(e=>e.rowIndex===rowIndex);
+  if(!exp) return;
+  state.pendingDelIdx=rowIndex;
+  document.getElementById('delete-desc').textContent=exp.description;
+  document.getElementById('delete-modal').hidden=false;
 }
-function cancelDelete() {
-  state.pendingDelIdx = null;
-  document.getElementById('delete-modal').hidden = true;
-}
+function cancelDelete() { state.pendingDelIdx=null; document.getElementById('delete-modal').hidden=true; }
 async function confirmDelete() {
-  const btn = document.getElementById('confirm-del-btn');
-  btn.disabled = true; btn.textContent = 'מוחק…';
+  const btn=document.getElementById('confirm-del-btn');
+  btn.disabled=true; btn.textContent='מוחק…';
   try {
-    await apiDelete({ password: state.password, rowIndex: state.pendingDelIdx });
-    const deleted = state.pendingDelIdx;
-    state.expenses = state.expenses.filter(e => e.rowIndex !== deleted);
-    // Shift row indices for rows that moved up
-    state.expenses.forEach(e => { if (e.rowIndex > deleted) e.rowIndex--; });
-    document.getElementById('delete-modal').hidden = true;
-    toast('ההוצאה נמחקה ✅', 'success');
-    renderSummary(); renderList();
-  } catch(e) { toast(e.message, 'error'); }
+    await apiReq('/api/expenses','DELETE',{password:state.password,rowIndex:state.pendingDelIdx});
+    const del=state.pendingDelIdx;
+    state.expenses=state.expenses.filter(e=>e.rowIndex!==del);
+    state.expenses.forEach(e=>{ if(e.rowIndex>del) e.rowIndex--; });
+    document.getElementById('delete-modal').hidden=true;
+    toast('ההוצאה נמחקה ✅','success');
+    renderSummary(); renderCharts(); renderList();
+  } catch(e){ toast(e.message,'error'); }
   finally { btn.disabled=false; btn.textContent='מחק'; state.pendingDelIdx=null; }
 }
 
 // ── ACTION AUTH MODAL ─────────────────────────────────────
-function showActionModal() {
-  document.getElementById('action-modal').hidden = false;
-  document.getElementById('action-pw').value = '';
-  document.getElementById('action-err').textContent = '';
-  setTimeout(() => document.getElementById('action-pw').focus(), 80);
-}
-function cancelActionAuth() {
-  state.pendingAction = null;
-  document.getElementById('action-modal').hidden = true;
-}
+function showActionModal() { document.getElementById('action-modal').hidden=false; document.getElementById('action-pw').value=''; document.getElementById('action-err').textContent=''; setTimeout(()=>document.getElementById('action-pw').focus(),80); }
+function cancelActionAuth() { state.pendingAction=null; document.getElementById('action-modal').hidden=true; }
 async function confirmActionAuth() {
-  const pw = document.getElementById('action-pw').value.trim();
-  const errEl = document.getElementById('action-err');
-  if (!pw) { errEl.textContent = 'יש להזין סיסמה'; return; }
+  const pw=document.getElementById('action-pw').value.trim();
+  const errEl=document.getElementById('action-err');
+  if(!pw){ errEl.textContent='יש להזין סיסמה'; return; }
   try {
-    await apiAuth(pw);
-    setAuthed(pw);
-    showAuthState();
-    document.getElementById('action-modal').hidden = true;
-    const action = state.pendingAction;
-    state.pendingAction = null;
-    if (action?.type === 'edit')   startEdit(action.rowIndex);
-    if (action?.type === 'delete') startDelete(action.rowIndex);
-  } catch(e) {
-    errEl.textContent = e.message;
-    document.getElementById('action-pw').value = '';
-  }
+    await apiAuth(pw); setAuthed(pw); showAuthState();
+    document.getElementById('action-modal').hidden=true;
+    const action=state.pendingAction; state.pendingAction=null;
+    if(action?.type==='edit')   startEdit(action.rowIndex);
+    if(action?.type==='delete') startDelete(action.rowIndex);
+    if(action?.type==='editIncome') startEditIncome(action.rowIndex);
+  } catch(e){ errEl.textContent=e.message; document.getElementById('action-pw').value=''; }
 }
 
 // ── INCOME FORM ───────────────────────────────────────────
+function setIncCat(cat) {
+  document.getElementById('i-cat').value=cat;
+  document.querySelectorAll('.pay-btn').forEach(b=>b.classList.toggle('selected',b.dataset.pay===cat));
+}
+
+function resetIncForm() {
+  document.getElementById('i-name').value  ='';
+  document.getElementById('i-amount').value='';
+  document.getElementById('i-date').value  =todayIso();
+  document.getElementById('i-cat').value   ='';
+  document.querySelectorAll('.pay-btn').forEach(b=>b.classList.remove('selected'));
+  document.getElementById('inc-form-title').textContent='💰 הכנסה חדשה';
+  document.getElementById('save-inc-btn').textContent  ='שמור הכנסה';
+  document.getElementById('cancel-inc-btn').hidden     =true;
+}
+
+function startEditIncome(rowIndex) {
+  if(!state.authed){ state.pendingAction={type:'editIncome',rowIndex}; showActionModal(); return; }
+  const inc=state.income.find(i=>i.rowIndex===rowIndex);
+  if(!inc) return;
+  state.editIncome=inc;
+  document.getElementById('i-name').value  =inc.name;
+  document.getElementById('i-amount').value=inc.amount;
+  document.getElementById('i-date').value  =dispToIso(inc.date);
+  setIncCat(inc.note||'');
+  document.getElementById('inc-form-title').textContent='✏️ עריכת הכנסה';
+  document.getElementById('save-inc-btn').textContent  ='עדכן הכנסה';
+  document.getElementById('cancel-inc-btn').hidden     =false;
+  showView('income');
+}
+function cancelEditIncome() { state.editIncome=null; resetIncForm(); showView('dash'); }
+
 async function saveIncome() {
-  const name   = document.getElementById('i-name').value.trim();
-  const amount = parseFloat(document.getElementById('i-amount').value) || 0;
-  const date   = document.getElementById('i-date').value;
-  const note   = document.getElementById('i-note').value.trim();
+  const name  =document.getElementById('i-name').value.trim();
+  const amount=parseFloat(document.getElementById('i-amount').value)||0;
+  const date  =document.getElementById('i-date').value;
+  const cat   =document.getElementById('i-cat').value;
 
-  if (!name)       { toast('יש להזין שם', 'error');      return; }
-  if (amount <= 0) { toast('יש להזין סכום תקין', 'error'); return; }
-  if (!date)       { toast('יש לבחור תאריך', 'error');   return; }
+  if(!name)       { toast('יש להזין שם','error');         return; }
+  if(amount<=0)   { toast('יש להזין סכום תקין','error'); return; }
+  if(!date)       { toast('יש לבחור תאריך','error');      return; }
+  if(!cat)        { toast('יש לבחור אמצעי תשלום','error'); return; }
 
-  const btn = document.getElementById('save-inc-btn');
-  btn.disabled = true; btn.textContent = 'שומר…';
-  const displayDate = isoToDisp(date);
+  const btn=document.getElementById('save-inc-btn');
+  btn.disabled=true; btn.textContent='שומר…';
+  const displayDate=isoToDisp(date);
   try {
-    await apiPost('/api/income', { password:state.password, date:displayDate, name, amount, note });
-    state.income.push({ date:displayDate, name, amount, note });
-    toast('ההכנסה נוספה! 💰', 'success');
-    document.getElementById('i-name').value   = '';
-    document.getElementById('i-amount').value = '';
-    document.getElementById('i-note').value   = '';
-    document.getElementById('i-date').value   = todayIso();
-    setTimeout(() => { showView('dash'); renderSummary(); }, 800);
-  } catch(e) { toast(e.message, 'error'); }
-  finally { btn.disabled=false; btn.textContent='שמור הכנסה'; }
+    if(state.editIncome){
+      await apiReq('/api/income','PUT',{password:state.password,rowIndex:state.editIncome.rowIndex,date:displayDate,name,amount,note:cat});
+      const idx=state.income.findIndex(i=>i.rowIndex===state.editIncome.rowIndex);
+      if(idx>=0) state.income[idx]={...state.editIncome,date:displayDate,name,amount,note:cat};
+      state.editIncome=null;
+      toast('ההכנסה עודכנה! ✏️','success');
+    } else {
+      await apiReq('/api/income','POST',{password:state.password,date:displayDate,name,amount,note:cat});
+      const maxRow=state.income.reduce((m,i)=>Math.max(m,i.rowIndex),1);
+      state.income.push({rowIndex:maxRow+1,date:displayDate,name,amount,note:cat});
+      toast('ההכנסה נוספה! 💰','success');
+    }
+    resetIncForm();
+    setTimeout(()=>{ showView('dash'); renderSummary(); renderCharts(); renderIncomeTable(); },800);
+  } catch(e){ toast(e.message,'error'); }
+  finally { btn.disabled=false; btn.textContent=state.editIncome?'עדכן הכנסה':'שמור הכנסה'; }
 }
 
 // ── TOAST ─────────────────────────────────────────────────
 let toastT;
-function toast(msg, type='') {
-  const el = document.getElementById('toast');
-  el.textContent = msg;
-  el.className   = `toast show${type?' toast-'+type:''}`;
-  clearTimeout(toastT);
-  toastT = setTimeout(() => { el.className='toast'; }, 3000);
-}
+function toast(msg,type='') { const el=document.getElementById('toast'); el.textContent=msg; el.className=`toast show${type?' toast-'+type:''}`; clearTimeout(toastT); toastT=setTimeout(()=>{el.className='toast';},3000); }
 
 // ── INIT ──────────────────────────────────────────────────
 restoreAuth();
@@ -969,6 +964,10 @@ setExpStatus('בוצע');
 document.getElementById('f-date').value = todayIso();
 document.getElementById('i-date').value = todayIso();
 loadAll();
+
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/sw.js').catch(() => {});
+}
 </script>
 </body>
 </html>

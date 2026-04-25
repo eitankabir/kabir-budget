@@ -118,11 +118,12 @@ app.get('/api/data', async (req, res) => {
       notes:        r[7] || '',
     }));
 
-    const income = (incRes.data.values || []).filter(r => r[0] && r[2]).map(r => ({
-      date:   r[0] || '',
-      name:   r[1] || '',
-      amount: parseFloat(r[2]) || 0,
-      note:   r[3] || '',
+    const income = (incRes.data.values || []).filter(r => r[0] && r[2]).map((r, i) => ({
+      rowIndex: i + 2,
+      date:     r[0] || '',
+      name:     r[1] || '',
+      amount:   parseFloat(r[2]) || 0,
+      note:     r[3] || '',
     }));
 
     res.json({ expenses, income });
@@ -200,6 +201,26 @@ app.delete('/api/expenses', async (req, res) => {
   } catch (err) {
     console.error(err.message);
     res.status(500).json({ error: 'שגיאה במחיקה' });
+  }
+});
+
+// ── PUT income (edit) ───────────────────────────────────────
+app.put('/api/income', async (req, res) => {
+  const { password, rowIndex, date, name, amount, note } = req.body;
+  if (password !== PASSWORD) return res.status(401).json({ error: 'סיסמה שגויה' });
+  if (!rowIndex || rowIndex < 2) return res.status(400).json({ error: 'שורה לא תקינה' });
+  try {
+    const client = await getClient();
+    await client.spreadsheets.values.update({
+      spreadsheetId: SPREADSHEET_ID,
+      range: `${SHEET_INC}!A${rowIndex}:D${rowIndex}`,
+      valueInputOption: 'USER_ENTERED',
+      requestBody: { values: [[date, name, String(amount), note || '']] },
+    });
+    res.json({ ok: true });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).json({ error: 'שגיאה בעדכון' });
   }
 });
 

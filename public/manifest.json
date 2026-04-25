@@ -1,0 +1,16 @@
+{
+  "name": "תקציב משפחת כביר",
+  "short_name": "כביר 💰",
+  "description": "ניהול תקציב משפחתי",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f1f5f9",
+  "theme_color": "#1d4ed8",
+  "lang": "he",
+  "dir": "rtl",
+  "orientation": "portrait",
+  "icons": [
+    { "src": "/family.jpg", "sizes": "any", "type": "image/jpeg", "purpose": "any" },
+    { "src": "/family.jpg", "sizes": "512x512", "type": "image/jpeg", "purpose": "maskable" }
+  ]
+}
