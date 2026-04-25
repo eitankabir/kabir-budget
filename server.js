@@ -12,7 +12,7 @@ const SHEET_EXP = 'הוצאות';
 const SHEET_INC = 'הכנסות';
 const PASSWORD  = process.env.EDIT_PASSWORD || 'kabir123';
 const PORT      = parseInt(process.env.PORT || '3000');
-const KEY_FILE  = path.join(__dirname, 'kabir-family-budget-bedff22c69f1.json');
+const KEY_FILE  = path.join(__dirname, process.env.GOOGLE_CREDENTIALS_FILE || 'kabir-family-budget-7fa4c3eb7a60.json');
 
 let expSheetIdCache = null;
 

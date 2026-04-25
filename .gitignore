@@ -1,5 +1,5 @@
 node_modules/
 .env
-kabir-family-budget-bedff22c69f1.json
+kabir-family-budget-*.json
 .claude.json
 .claude/
