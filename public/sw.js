@@ -1,4 +1,4 @@
-const CACHE = 'kabir-v2';
+const CACHE = 'kabir-v3';
 const STATIC = ['/', '/index.html', '/family.jpg', '/manifest.json'];
 
 self.addEventListener('install', e => {
