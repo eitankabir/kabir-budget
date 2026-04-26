@@ -17,10 +17,15 @@ const KEY_FILE  = path.join(__dirname, process.env.GOOGLE_CREDENTIALS_FILE || 'k
 let expSheetIdCache = null;
 
 async function getClient() {
-  const auth = new google.auth.GoogleAuth({
-    keyFile: KEY_FILE,
-    scopes: ['https://www.googleapis.com/auth/spreadsheets'],
-  });
+  let authConfig;
+  if (process.env.GOOGLE_CREDENTIALS) {
+    // Render (and similar): credentials stored as JSON string in env var
+    authConfig = { credentials: JSON.parse(process.env.GOOGLE_CREDENTIALS), scopes: ['https://www.googleapis.com/auth/spreadsheets'] };
+  } else {
+    // Local development: read from key file
+    authConfig = { keyFile: KEY_FILE, scopes: ['https://www.googleapis.com/auth/spreadsheets'] };
+  }
+  const auth = new google.auth.GoogleAuth(authConfig);
   return google.sheets({ version: 'v4', auth });
 }
 
