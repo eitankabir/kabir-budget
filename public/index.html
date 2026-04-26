@@ -44,7 +44,7 @@
       min-height: 190px;
       background: linear-gradient(135deg,#1e3a5f,#1d4ed8 55%,#7c3aed);
       background-image: url('/family.jpg'), linear-gradient(135deg,#1e3a5f,#1d4ed8 55%,#7c3aed);
-      background-size: 160%; background-position: center 28%;
+      background-size: cover; background-position: center center;
       display: flex; align-items: center; justify-content: center;
       position: relative; overflow: hidden;
     }
@@ -68,9 +68,10 @@
     /* ── CHARTS ─────────────────────────────── */
     .charts-section { padding: 13px 13px 0; }
     .charts-grid { display: grid; grid-template-columns: 1fr; gap: 11px; }
-    .chart-card { background: var(--card); border-radius: var(--radius); padding: 14px 14px 10px; box-shadow: var(--shadow); }
-    .chart-title { font-size: .82rem; font-weight: 700; text-align: center; margin-bottom: 8px; color: var(--text); }
-    .chart-empty { text-align: center; padding: 30px 0; color: var(--muted); font-size: .85rem; }
+    .chart-card { background: var(--card); border-radius: var(--radius); padding: 10px 10px 8px; box-shadow: var(--shadow); }
+    .chart-title { font-size: .78rem; font-weight: 700; text-align: center; margin-bottom: 6px; color: var(--text); }
+    .chart-empty { text-align: center; padding: 20px 0; color: var(--muted); font-size: .8rem; }
+    .chart-card canvas { max-height: 180px; }
     @media (min-width: 600px) { .charts-grid { grid-template-columns: 1fr 1fr; } }
 
     /* ── INCOME TABLE ───────────────────────── */
@@ -237,16 +238,32 @@
     </div>
   </div>
 
-  <!-- Charts -->
-  <div class="charts-section">
-    <div class="charts-grid">
-      <div class="chart-card">
-        <div class="chart-title">💰 הכנסות מול הוצאות</div>
-        <div id="chart1-wrap"><canvas id="chart-overview"></canvas></div>
-      </div>
-      <div class="chart-card">
-        <div class="chart-title">🏷️ הוצאות לפי קטגוריה</div>
-        <div id="chart2-wrap"><canvas id="chart-cats"></canvas></div>
+  <!-- Filter bar -->
+  <div class="filter-bar">
+    <select class="filter-sel" id="filter-cat" onchange="applyFilters()">
+      <option value="">כל הקטגוריות</option>
+    </select>
+    <select class="filter-sel" id="filter-status" onchange="applyFilters()">
+      <option value="">כל הסטטוסים</option>
+      <option value="בוצע">✅ בוצע</option>
+      <option value="מתוכנן">📅 מתוכנן</option>
+      <option value="בבדיקה">🔍 בבדיקה</option>
+      <option value="בוטל">❌ בוטל</option>
+    </select>
+    <button class="refresh-btn" id="refresh-btn" onclick="doRefresh()" title="רענן">🔄</button>
+  </div>
+
+  <!-- Expense list -->
+  <div class="list-section" style="padding-bottom:16px">
+    <div class="list-hdr">
+      <div class="list-title">📋 הוצאות</div>
+      <div class="list-count" id="list-count">…</div>
+    </div>
+    <div id="expense-list">
+      <div class="exp-card">
+        <div class="sk" style="width:42px;height:42px;border-radius:11px;flex-shrink:0"></div>
+        <div style="flex:1"><div class="sk" style="height:15px;margin-bottom:6px;border-radius:5px"></div><div class="sk" style="height:11px;width:65%;border-radius:5px"></div></div>
+        <div style="flex-shrink:0"><div class="sk" style="height:15px;width:50px;border-radius:5px;margin-bottom:5px"></div><div class="sk" style="height:11px;width:40px;border-radius:5px"></div></div>
       </div>
     </div>
   </div>
@@ -266,32 +283,16 @@
     </div>
   </div>
 
-  <!-- Filter bar -->
-  <div class="filter-bar">
-    <select class="filter-sel" id="filter-cat" onchange="applyFilters()">
-      <option value="">כל הקטגוריות</option>
-    </select>
-    <select class="filter-sel" id="filter-status" onchange="applyFilters()">
-      <option value="">כל הסטטוסים</option>
-      <option value="בוצע">✅ בוצע</option>
-      <option value="מתוכנן">📅 מתוכנן</option>
-      <option value="בבדיקה">🔍 בבדיקה</option>
-      <option value="בוטל">❌ בוטל</option>
-    </select>
-    <button class="refresh-btn" id="refresh-btn" onclick="doRefresh()" title="רענן">🔄</button>
-  </div>
-
-  <!-- Expense list -->
-  <div class="list-section">
-    <div class="list-hdr">
-      <div class="list-title">📋 הוצאות</div>
-      <div class="list-count" id="list-count">…</div>
-    </div>
-    <div id="expense-list">
-      <div class="exp-card">
-        <div class="sk" style="width:42px;height:42px;border-radius:11px;flex-shrink:0"></div>
-        <div style="flex:1"><div class="sk" style="height:15px;margin-bottom:6px;border-radius:5px"></div><div class="sk" style="height:11px;width:65%;border-radius:5px"></div></div>
-        <div style="flex-shrink:0"><div class="sk" style="height:15px;width:50px;border-radius:5px;margin-bottom:5px"></div><div class="sk" style="height:11px;width:40px;border-radius:5px"></div></div>
+  <!-- Charts (bottom) -->
+  <div class="charts-section" style="padding-bottom:100px">
+    <div class="charts-grid">
+      <div class="chart-card">
+        <div class="chart-title">💰 הכנסות מול הוצאות</div>
+        <div id="chart1-wrap"><canvas id="chart-overview"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">🏷️ הוצאות לפי קטגוריה</div>
+        <div id="chart2-wrap"><canvas id="chart-cats"></canvas></div>
       </div>
     </div>
   </div>
